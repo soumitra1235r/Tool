@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subway Surfers</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; }
+        #game { width: 100vw; height: 100vh; position: relative; }
+        #player { width: 60px; height: 60px; position: absolute; bottom: 100px; left: 50px; background: url('player.png'); background-size: cover; }
+        .obstacle { width: 50px; height: 50px; position: absolute; background: url('obstacle.png'); background-size: cover; }
+        .coin { width: 30px; height: 30px; position: absolute; background: url('coin.png'); background-size: cover; }
+        #score { position: fixed; top: 20px; right: 20px; color: white; font-size: 24px; font-family: Arial; }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <div id="player"></div>
+        <div id="score">Score: 0</div>
+    </div>
+    <script>
+        const player = document.getElementById('player');
+        const scoreElement = document.getElementById('score');
+        let isJumping = false, score = 0, gravity = 0.9, velocity = 0;
+
+        // Controls
+        document.addEventListener('keydown', (e) => e.code === 'Space' && !isJumping && jump());
+
+        function jump() {
+            isJumping = true;
+            velocity = -15;
+            applyGravity();
+        }
+
+        function applyGravity() {
+            const currentBottom = parseFloat(player.style.bottom) || 100;
+            const newBottom = currentBottom + velocity;
+            if (newBottom <= 100) {
+                player.style.bottom = newBottom + 'px';
+                velocity += gravity;
+                requestAnimationFrame(applyGravity);
+            } else {
+                player.style.bottom = '100px';
+                isJumping = false;
+            }
+        }
+
+        // Game elements
+        function createElement(type) {
+            const el = document.createElement('div');
+            el.className = type;
+            el.style.right = '-50px';
+            el.style.bottom = type === 'coin' ? `${Math.random() * 300 + 100}px` : '100px';
+            document.getElementById('game').appendChild(el);
+
+            let pos = -50;
+            const move = setInterval(() => {
+                pos += 5;
+                el.style.right = pos + 'px';
+                
+                if (checkCollision(player, el)) {
+                    type === 'coin' ? (score += 10, scoreElement.textContent = `Score: ${score}`, el.remove()) 
+                                  : (alert(`Game Over! Score: ${score}`), location.reload());
+                }
+                
+                pos > innerWidth && (el.remove(), clearInterval(move));
+            }, 20);
+        }
+
+        function checkCollision(a, b) {
+            const aRect = a.getBoundingClientRect();
+            const bRect = b.getBoundingClientRect();
+            return !(aRect.right < bRect.left || aRect.left > bRect.right || aRect.top > bRect.bottom || aRect.bottom < bRect.top);
+        }
+
+        // Game loop
+        setInterval(() => {
+            Math.random() < 0.02 && createElement('obstacle');
+            Math.random() < 0.05 && createElement('coin');
+        }, 1000);
+    </script>
+</body>
+</html>
+# In command prompt/git bash:
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin YOUR_GITHUB_REPO_URL_HERE
+git push -u origin main
